@@ -637,7 +637,7 @@ svg {
 }
 
 .rotulo-section {
-  padding: 10px 12px;
+  padding: 10px 8px;
 }
 
 .rotulo-section-title {
@@ -647,9 +647,9 @@ svg {
   letter-spacing: 1.5px;
   color: #000;
   background: var(--color-primary-light);
-  padding: 5px 8px;
-  margin-bottom: 12px;
-  border-left: 4px solid var(--label-accent);
+  padding: 4px 8px;
+  margin-bottom: 8px;
+  border-left: 3px solid var(--label-accent);
   font-family: 'Inter', sans-serif;
 }
 
