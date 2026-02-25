@@ -670,6 +670,9 @@ svg {
   font-weight: 800;
   margin-top: 3px;
   letter-spacing: 0.5px;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
 }
 
 
