@@ -544,8 +544,9 @@ svg {
    ACTUAL LABEL (The rótulo)
    =========================== */
 .rotulo {
+  --label-accent: #1a1a2e;
   font-family: var(--font-label);
-  border: 2px solid #1a1a2e;
+  border: 2px solid var(--label-accent);
   border-radius: 6px;
   background: #fff;
   color: #1a1a2e;
@@ -554,6 +555,30 @@ svg {
   width: 100%;
   max-width: 380px;
   margin: 0 auto;
+  position: relative;
+}
+
+/* Watermark layer */
+.label-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  width: 70%;
+  height: 70%;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.label-watermark img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: grayscale(100%);
 }
 
 .rotulo-header {
@@ -564,8 +589,10 @@ svg {
   padding: 10px 14px;
   background: #1a1a2e;
   color: #fff;
-  border-bottom: 3px solid #4f6ef7;
+  border-bottom: 3px solid var(--label-accent);
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .rotulo-logo {
@@ -600,6 +627,8 @@ svg {
   display: grid;
   grid-template-columns: 1fr 1px 1fr;
   min-height: 100px;
+  position: relative;
+  z-index: 1;
 }
 
 .rotulo-divider {
@@ -616,12 +645,13 @@ svg {
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #4f6ef7;
+  color: var(--label-accent);
   margin-bottom: 6px;
   border-bottom: 1px solid #eee;
   padding-bottom: 4px;
   font-family: var(--font-ui);
 }
+
 
 .rotulo-field {
   font-size: 0.78rem;

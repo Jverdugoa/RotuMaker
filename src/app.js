@@ -6,6 +6,7 @@ import { extractFromMessage, getExtractorErrorMessage } from './extractor.js';
 import { buildLabelHTML, renderLabelPreview } from './label.js';
 import { printLabels, renderPrintPreview } from './print.js';
 import { getSettings, bindSettingsEvents } from './settings.js';
+import { applyBranding } from './branding.js';
 
 // ================================
 // STATE
@@ -24,6 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
     bindLabelTabEvents();
     bindPrintTabEvents();
     updateLabelBadge();
+
+    // Apply branding on startup if logo exists
+    const s = getSettings();
+    if (s.companyLogo) {
+        import('./branding.js').then(m => m.getDominantColor(s.companyLogo).then(color => m.applyBranding(color)));
+    }
 });
 
 // ================================

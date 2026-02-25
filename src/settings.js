@@ -3,6 +3,8 @@
  * Manages app configuration persisted in localStorage
  */
 
+import { getDominantColor, applyBranding } from './branding.js';
+
 const KEYS = {
     API_KEY_GEMINI: 'rotumaker_api_key',
     API_KEY_GROQ: 'rotumaker_groq_key',
@@ -131,6 +133,11 @@ export function bindSettingsEvents(onSave) {
         if (logoBtn.dataset.pendingLogo) {
             settings.companyLogo = logoBtn.dataset.pendingLogo;
             delete logoBtn.dataset.pendingLogo;
+
+            // Dynamic branding
+            getDominantColor(settings.companyLogo).then(color => {
+                applyBranding(color);
+            });
         }
         saveSettings(settings);
         modal.classList.remove('open');
