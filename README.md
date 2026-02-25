@@ -46,3 +46,9 @@
 
 ---
 *Optimiza tus envíos, un rótulo a la vez.*
+
+## 🗺️ Roadmap (Futuras Mejoras)
+Consulta nuestra [Hoja de Ruta](file:///C:/Users/theto/.gemini/antigravity/brain/4dfe4f7b-3e81-4b35-8444-9584031fef7b/roadmap.md) para conocer los planes sobre:
+- Detección automática de colores de marca.
+- Integración con n8n y CRMs.
+- Plantillas de rótulos personalizables.
