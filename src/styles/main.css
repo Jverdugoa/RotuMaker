@@ -642,14 +642,17 @@ svg {
 
 .rotulo-section-title {
   font-size: 0.65rem;
-  font-weight: 800;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
-  color: var(--label-accent);
-  margin-bottom: 8px;
-  border-bottom: 1.5px solid var(--label-accent);
-  padding-bottom: 4px;
-  font-family: var(--font-ui);
+  letter-spacing: 1.5px;
+  color: #000;
+  /* Pure black for titles to maximize contrast */
+  background: var(--color-primary-light);
+  /* Tiny hint of brand color in background */
+  padding: 4px 6px;
+  margin-bottom: 10px;
+  border-left: 3px solid var(--label-accent);
+  font-family: 'Inter', sans-serif;
 }
 
 .rotulo-field {
