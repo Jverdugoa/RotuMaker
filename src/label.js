@@ -48,13 +48,17 @@ export function buildLabelHTML(label, company) {
 
   const companyNameDisplay = company.companyName || 'MI EMPRESA';
 
-  const remitente = [
+  let remitente = [
     company.companyName && `<div class="rotulo-field"><strong>Empresa</strong>${company.companyName}</div>`,
     company.companyAddr && `<div class="rotulo-field"><strong>Dirección</strong>${company.companyAddr}</div>`,
     company.companyCity && `<div class="rotulo-field"><strong>Ciudad</strong>${company.companyCity}</div>`,
     company.companyPhone && `<div class="rotulo-field"><strong>Tel</strong>${formatPhone(company.companyPhone)}</div>`,
-    label.notas && `<div class="rotulo-field" style="margin-top:10px"><strong>Notas</strong>${label.notas}</div>`,
   ].filter(Boolean).join('');
+
+  if (label.notas) {
+    remitente += `<div class="rotulo-h-divider"></div>`;
+    remitente += `<div class="rotulo-field"><strong>Notas / Contenido</strong>${label.notas}</div>`;
+  }
 
   const destinatario = [
     label.nombre && `<div class="rotulo-field"><strong>Nombre</strong>${label.nombre}</div>`,

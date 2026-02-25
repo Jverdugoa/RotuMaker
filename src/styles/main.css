@@ -636,6 +636,13 @@ svg {
   align-self: stretch;
 }
 
+.rotulo-h-divider {
+  background: #c8cad0;
+  height: 1px;
+  width: 100%;
+  margin: 10px 0;
+}
+
 .rotulo-section {
   padding: 10px 8px;
 }
