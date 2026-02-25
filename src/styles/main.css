@@ -641,34 +641,36 @@ svg {
 }
 
 .rotulo-section-title {
-  font-size: 0.6rem;
-  font-weight: bold;
+  font-size: 0.65rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   color: var(--label-accent);
-  margin-bottom: 6px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 8px;
+  border-bottom: 1.5px solid var(--label-accent);
   padding-bottom: 4px;
   font-family: var(--font-ui);
 }
 
-
 .rotulo-field {
-  font-size: 0.78rem;
-  line-height: 1.5;
-  color: #1a1a2e;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #000;
   font-family: var(--font-label);
+  margin-bottom: 6px;
 }
 
 .rotulo-field strong {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
-  color: #666;
+  color: #333;
   display: block;
   font-family: var(--font-ui);
-  font-weight: 600;
-  margin-top: 4px;
+  font-weight: 800;
+  margin-top: 2px;
+  letter-spacing: 0.5px;
 }
+
 
 .rotulo-footer {
   background: #f5f6fa;
