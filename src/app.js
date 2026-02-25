@@ -138,6 +138,7 @@ function fillExtractedFields(data) {
     document.getElementById('field-direccion').value = data.direccion || '';
     document.getElementById('field-ciudad').value = data.ciudad || '';
     document.getElementById('field-telefono').value = data.telefono || '';
+    document.getElementById('field-notas').value = data.notas || '';
 }
 
 function getFormData() {
@@ -148,6 +149,7 @@ function getFormData() {
         direccion: document.getElementById('field-direccion').value.trim(),
         ciudad: document.getElementById('field-ciudad').value.trim(),
         telefono: document.getElementById('field-telefono').value.trim(),
+        notas: document.getElementById('field-notas').value.trim(),
         paymentType: paymentRadio?.value || '',
         monto: document.getElementById('field-monto').value.trim(),
     };
@@ -178,7 +180,7 @@ function handleAddLabel() {
 function clearExtractForm() {
     document.getElementById('input-message').value = '';
     document.getElementById('extracted-section').style.display = 'none';
-    ['field-nombre', 'field-cedula', 'field-direccion', 'field-ciudad', 'field-telefono', 'field-monto']
+    ['field-nombre', 'field-cedula', 'field-direccion', 'field-ciudad', 'field-telefono', 'field-monto', 'field-notas']
         .forEach(id => document.getElementById(id).value = '');
     document.querySelectorAll('input[name="payment"]').forEach(r => r.checked = false);
     document.getElementById('recaudo-amount').style.display = 'none';

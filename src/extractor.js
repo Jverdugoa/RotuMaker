@@ -17,6 +17,7 @@ Tu tarea es identificar y extraer los siguientes campos:
 - direccion: Dirección de entrega completa incluyendo apartamento, conjunto, referencias, etc.
 - ciudad: Ciudad de destino
 - telefono: Número de teléfono (puede venir como "Tel", "Cel", "Telefono", "celular", etc.)
+- notas: Cualquier información adicional sobre el envío o contenido (ej: "frágil", "contenido: ropa", "entregar en portería")
 
 Reglas importantes:
 1. Ignora las marcas de tiempo [DD/M, HH:MM] y los prefijos de usuario (ej: "jkarlospuentes:") de WhatsApp
@@ -33,7 +34,7 @@ Ejemplo de entrada:
 [24/2, 8:43 p. m.] usuario: Telefono 3176746268
 
 Respuesta esperada:
-{"nombre":"Juan Carlos Puerres","cedula":"611231","direccion":"Calle 6 # 20E-30 apartamento 801 Conjunto Residencial Versalles","ciudad":"Bogota","telefono":"3176746268"}`;
+{"nombre":"Juan Carlos Puerres","cedula":"611231","direccion":"Calle 6 # 20E-30 apartamento 801 Conjunto Residencial Versalles","ciudad":"Bogota","telefono":"3176746268","notas":""}`;
 
 /**
  * Extract label fields from a raw text message
@@ -60,6 +61,7 @@ export async function extractFromMessage(rawText, apiKey, provider = 'gemini') {
         direccion: String(extracted.direccion || '').trim(),
         ciudad: String(extracted.ciudad || '').trim(),
         telefono: String(extracted.telefono || '').replace(/\D/g, ''),
+        notas: String(extracted.notas || '').trim(),
     };
 }
 

@@ -53,6 +53,7 @@ export function buildLabelHTML(label, company) {
     company.companyAddr && `<div class="rotulo-field"><strong>Dirección</strong>${company.companyAddr}</div>`,
     company.companyCity && `<div class="rotulo-field"><strong>Ciudad</strong>${company.companyCity}</div>`,
     company.companyPhone && `<div class="rotulo-field"><strong>Tel</strong>${formatPhone(company.companyPhone)}</div>`,
+    label.notas && `<div class="rotulo-field" style="margin-top:10px"><strong>Notas</strong>${label.notas}</div>`,
   ].filter(Boolean).join('');
 
   const destinatario = [
