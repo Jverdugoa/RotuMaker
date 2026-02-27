@@ -356,6 +356,75 @@
       </div>
     </div>
 
+    <!-- EDIT LABEL MODAL -->
+    <div class="modal-overlay" id="edit-modal" role="dialog" aria-modal="true" aria-label="Editar Rótulo">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h2>Editar Rótulo</h2>
+          <button class="btn-icon" id="btn-close-edit" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="edit-label-index" />
+          <div class="field-grid">
+            <div class="field-group">
+              <label class="field-label">Nombre</label>
+              <input type="text" class="field-input" id="edit-nombre" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Cédula / ID</label>
+              <input type="text" class="field-input" id="edit-cedula" />
+            </div>
+            <div class="field-group full-width">
+              <label class="field-label">Dirección</label>
+              <input type="text" class="field-input" id="edit-direccion" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Ciudad</label>
+              <input type="text" class="field-input" id="edit-ciudad" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Teléfono</label>
+              <input type="text" class="field-input" id="edit-telefono" />
+            </div>
+            <div class="field-group full-width">
+              <label class="field-label">Notas / Info adicional</label>
+              <input type="text" class="field-input" id="edit-notas" />
+            </div>
+          </div>
+
+          <div class="payment-section">
+            <p class="field-label">Tipo de envío</p>
+            <div class="payment-options">
+              <label class="payment-opt">
+                <input type="radio" name="edit-payment" value="pago" id="edit-pay-pago" />
+                <span class="opt-box">Pago</span>
+              </label>
+              <label class="payment-opt">
+                <input type="radio" name="edit-payment" value="recaudo" id="edit-pay-recaudo" />
+                <span class="opt-box">Recaudo</span>
+              </label>
+              <label class="payment-opt">
+                <input type="radio" name="edit-payment" value="contraentrega" id="edit-pay-contra" />
+                <span class="opt-box">Contraentrega</span>
+              </label>
+            </div>
+            <div class="recaudo-amount" id="edit-recaudo-amount" style="display:none; margin-top:12px">
+              <label class="field-label">Monto a recaudar</label>
+              <div class="amount-input-wrap">
+                <span class="currency-prefix">$</span>
+                <input type="text" class="field-input" id="edit-monto" placeholder="0" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary full-width" id="btn-save-edit">Guardar cambios</button>
+        </div>
+      </div>
+    </div>
+
     <!-- TOAST NOTIFICATION -->
     <div class="toast" id="toast" role="alert" aria-live="polite"></div>
 

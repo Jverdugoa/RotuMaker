@@ -199,6 +199,20 @@ function bindLabelTabEvents() {
 
     document.getElementById('btn-go-extract').addEventListener('click', () => switchTab('extraer'));
     document.getElementById('btn-go-print').addEventListener('click', () => switchTab('imprimir'));
+
+    // Edit Modal events
+    document.getElementById('btn-close-edit').addEventListener('click', () => {
+        document.getElementById('edit-modal').classList.remove('open');
+    });
+    document.getElementById('btn-save-edit').addEventListener('click', handleSaveEdit);
+
+    // Recaudo toggle in Edit Modal
+    document.querySelectorAll('input[name="edit-payment"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            const recaudoDiv = document.getElementById('edit-recaudo-amount');
+            recaudoDiv.style.display = radio.value === 'recaudo' && radio.checked ? 'block' : 'none';
+        });
+    });
 }
 
 function refreshLabelPreview() {
@@ -230,29 +244,72 @@ function refreshLabelPreview() {
     };
 
     labels.forEach((label, idx) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'label-item-wrap';
-        wrapper.dataset.id = label.id;
+        renderLabelPreview(label, company, container, idx);
+    });
 
-        const rotulo = document.createElement('div');
-        rotulo.className = 'rotulo';
-        rotulo.innerHTML = buildLabelHTML(label, company);
+    // Delegate events for Edit and Delete
+    container.querySelectorAll('.btn-action.edit').forEach(btn => {
+        btn.addEventListener('click', () => openEditModal(parseInt(btn.dataset.index)));
+    });
 
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'label-delete-btn';
-        deleteBtn.title = 'Eliminar rótulo';
-        deleteBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>`;
-        deleteBtn.addEventListener('click', () => {
-            labels = labels.filter(l => l.id !== label.id);
+    container.querySelectorAll('.btn-action.delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.index);
+            labels.splice(idx, 1);
             updateLabelBadge();
             refreshLabelPreview();
             showToast('Rótulo eliminado', 'success');
         });
-
-        wrapper.appendChild(rotulo);
-        wrapper.appendChild(deleteBtn);
-        container.appendChild(wrapper);
     });
+}
+
+function openEditModal(index) {
+    const label = labels[index];
+    if (!label) return;
+
+    document.getElementById('edit-label-index').value = index;
+    document.getElementById('edit-nombre').value = label.nombre || '';
+    document.getElementById('edit-cedula').value = label.cedula || '';
+    document.getElementById('edit-direccion').value = label.direccion || '';
+    document.getElementById('edit-ciudad').value = label.ciudad || '';
+    document.getElementById('edit-telefono').value = label.telefono || '';
+    document.getElementById('edit-notas').value = label.notas || '';
+    document.getElementById('edit-monto').value = label.monto || '';
+
+    // Payment type
+    const payId = `edit-pay-${label.paymentType || 'pago'}`;
+    const radio = document.getElementById(payId);
+    if (radio) {
+        radio.checked = true;
+        const recaudoDiv = document.getElementById('edit-recaudo-amount');
+        recaudoDiv.style.display = label.paymentType === 'recaudo' ? 'block' : 'none';
+    }
+
+    document.getElementById('edit-modal').classList.add('open');
+}
+
+function handleSaveEdit() {
+    const index = parseInt(document.getElementById('edit-label-index').value);
+    if (isNaN(index)) return;
+
+    const paymentRadio = document.querySelector('input[name="edit-payment"]:checked');
+
+    const updatedData = {
+        ...labels[index],
+        nombre: document.getElementById('edit-nombre').value.trim(),
+        cedula: document.getElementById('edit-cedula').value.trim(),
+        direccion: document.getElementById('edit-direccion').value.trim(),
+        ciudad: document.getElementById('edit-ciudad').value.trim(),
+        telefono: document.getElementById('edit-telefono').value.trim(),
+        notas: document.getElementById('edit-notas').value.trim(),
+        paymentType: paymentRadio?.value || '',
+        monto: document.getElementById('edit-monto').value.trim(),
+    };
+
+    labels[index] = updatedData;
+    document.getElementById('edit-modal').classList.remove('open');
+    refreshLabelPreview();
+    showToast('✅ Cambios guardados', 'success');
 }
 
 // ================================
