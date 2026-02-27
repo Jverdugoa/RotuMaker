@@ -14,8 +14,8 @@ Recibirás un fragmento de conversación (puede ser de WhatsApp u otro formato d
 Tu tarea es identificar y extraer los siguientes campos:
 - nombre: Nombre completo del destinatario
 - cedula: Número de cédula o documento de identidad (puede venir como "Cc", "CC", "cédula", "cedula", "c.c.", "dni", etc.)
-- direccion: Dirección de entrega completa incluyendo apartamento, conjunto, referencias, etc.
-- ciudad: Ciudad de destino
+- direccion: Dirección de entrega. REGLA: Separa la dirección principal (Calle, Cra, Av, etc.) de los complementos (Apto, Conjunto, Bloque, Referencias) usando el separador " | ". Ej: "Calle 10 # 5-20 | Apto 501 Conjunto Versalles".
+- ciudad: Ciudad de destino. REGLA: Identifica el departamento de Colombia al que pertenece la ciudad y devuélvelo en formato "Ciudad - Departamento". Ej: "Bogotá - Cundinamarca", "Medellín - Antioquia".
 - telefono: Número de teléfono (puede venir como "Tel", "Cel", "Telefono", "celular", etc.)
 - notas: Cualquier información adicional sobre el envío o contenido (ej: "frágil", "contenido: ropa", "entregar en portería")
 
@@ -30,11 +30,11 @@ Ejemplo de entrada:
 [24/2, 8:39 p. m.] usuario: Juan Carlos Puerres
 [24/2, 8:40 p. m.] usuario: Cc 611231
 [24/2, 8:41 p. m.] usuario: Calle 6 # 20E-30 apartamento 801 Conjunto Residencial Versalles
-[24/2, 8:42 p. m.] usuario: Bogota
+[24/2, 8:42 p. m.] usuario: Cali
 [24/2, 8:43 p. m.] usuario: Telefono 3176746268
 
 Respuesta esperada:
-{"nombre":"Juan Carlos Puerres","cedula":"611231","direccion":"Calle 6 # 20E-30 apartamento 801 Conjunto Residencial Versalles","ciudad":"Bogota","telefono":"3176746268","notas":""}`;
+{"nombre":"Juan Carlos Puerres","cedula":"611231","direccion":"Calle 6 # 20E-30 | Apto 801 Conjunto Residencial Versalles","ciudad":"Cali - Valle del Cauca","telefono":"3176746268","notas":""}`;
 
 /**
  * Extract label fields from a raw text message

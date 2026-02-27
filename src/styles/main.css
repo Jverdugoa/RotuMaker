@@ -581,6 +581,21 @@ svg {
   filter: grayscale(100%);
 }
 
+/* Ink Saving Mode overrides */
+.rotulo.ink-save .rotulo-header {
+  background: #fff;
+  color: #000;
+  border-bottom: 2px solid var(--label-accent);
+}
+
+.rotulo.ink-save .rotulo-logo {
+  filter: none;
+}
+
+.rotulo.ink-save .rotulo-company-name {
+  color: #000;
+}
+
 .rotulo-header {
   display: flex;
   align-items: center;
@@ -1194,7 +1209,7 @@ svg {
 
   .print-rotulo {
     font-family: 'Times New Roman', Times, serif;
-    border: 2px solid #1a1a2e;
+    border: 2px solid var(--label-accent);
     border-radius: 4px;
     background: #fff;
     color: #1a1a2e;
@@ -1209,6 +1224,17 @@ svg {
     print-color-adjust: exact;
   }
 
+  /* Ink save override for print */
+  .print-rotulo.ink-save .rotulo-header {
+    background: #fff !important;
+    color: #000 !important;
+    border-bottom: 2px solid var(--label-accent) !important;
+  }
+
+  .print-rotulo.ink-save .rotulo-logo {
+    filter: none !important;
+  }
+
   .print-rotulo .rotulo-footer {
     background: #f5f6fa !important;
     -webkit-print-color-adjust: exact;
@@ -1216,7 +1242,7 @@ svg {
   }
 
   .print-rotulo .rotulo-section-title {
-    color: #4f6ef7 !important;
+    color: var(--label-accent) !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -1248,4 +1274,68 @@ svg {
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
   border-radius: 3px;
+}
+
+/* ===========================
+   TOGGLE SWITCH
+   =========================== */
+.toggle-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--color-surface-2);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  margin-top: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.toggle-option:hover {
+  background: var(--color-border);
+}
+
+.toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toggle-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.toggle-checkbox {
+  appearance: none;
+  width: 44px;
+  height: 24px;
+  background: #ccc;
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+
+.toggle-checkbox:checked {
+  background: var(--color-primary);
+}
+
+.toggle-checkbox::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.toggle-checkbox:checked::after {
+  transform: translateX(20px);
 }

@@ -43,7 +43,11 @@ export function printLabels(labels, company, perPage = 6, orientation = 'portrai
 
         pageLabels.forEach(label => {
             const rotulo = document.createElement('div');
-            rotulo.className = 'print-rotulo rotulo';
+            const inkSave = localStorage.getItem('rotumaker_ink_save') === 'true';
+            const brandColor = sessionStorage.getItem('rotumaker_brand_color') || '#1a1a2e';
+
+            rotulo.className = `print-rotulo rotulo ${inkSave ? 'ink-save' : ''}`;
+            rotulo.style.setProperty('--label-accent', brandColor);
             rotulo.innerHTML = buildLabelHTML(label, company);
             page.appendChild(rotulo);
         });
@@ -86,8 +90,11 @@ export function renderPrintPreview(labels, company, perPage, container) {
 
         pageLabels.forEach(label => {
             const mini = document.createElement('div');
-            mini.className = 'rotulo';
-            mini.style.cssText = 'transform-origin: top left; font-size: 0.6rem; pointer-events: none;';
+            const inkSave = localStorage.getItem('rotumaker_ink_save') === 'true';
+            const brandColor = sessionStorage.getItem('rotumaker_brand_color') || '#1a1a2e';
+
+            mini.className = `rotulo ${inkSave ? 'ink-save' : ''}`;
+            mini.style.cssText = `transform-origin: top left; font-size: 0.6rem; pointer-events: none; --label-accent: ${brandColor};`;
             mini.innerHTML = buildLabelHTML(label, company);
             sheet.appendChild(mini);
         });

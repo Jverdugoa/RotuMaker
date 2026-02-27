@@ -14,6 +14,7 @@ const KEYS = {
     COMPANY_PHONE: 'rotumaker_company_phone',
     COMPANY_CITY: 'rotumaker_company_city',
     COMPANY_LOGO: 'rotumaker_company_logo',
+    INK_SAVE: 'rotumaker_ink_save',
 };
 
 export function getSettings() {
@@ -26,6 +27,7 @@ export function getSettings() {
         companyPhone: localStorage.getItem(KEYS.COMPANY_PHONE) || '',
         companyCity: localStorage.getItem(KEYS.COMPANY_CITY) || '',
         companyLogo: localStorage.getItem(KEYS.COMPANY_LOGO) || '',
+        inkSave: localStorage.getItem(KEYS.INK_SAVE) === 'true',
     };
 }
 
@@ -38,6 +40,7 @@ export function saveSettings(s) {
     if (s.companyPhone !== undefined) localStorage.setItem(KEYS.COMPANY_PHONE, s.companyPhone);
     if (s.companyCity !== undefined) localStorage.setItem(KEYS.COMPANY_CITY, s.companyCity);
     if (s.companyLogo !== undefined) localStorage.setItem(KEYS.COMPANY_LOGO, s.companyLogo);
+    if (s.inkSave !== undefined) localStorage.setItem(KEYS.INK_SAVE, String(s.inkSave));
 }
 
 export function readFileAsDataURL(file) {
@@ -57,6 +60,7 @@ export function initSettingsUI() {
     document.getElementById('setting-company-address').value = s.companyAddr;
     document.getElementById('setting-company-phone').value = s.companyPhone;
     document.getElementById('setting-company-city').value = s.companyCity;
+    document.getElementById('setting-ink-save').checked = s.inkSave;
 
     // Provider selector
     document.querySelectorAll('.provider-btn').forEach(btn => {
@@ -129,6 +133,7 @@ export function bindSettingsEvents(onSave) {
             companyAddr: document.getElementById('setting-company-address').value.trim(),
             companyPhone: document.getElementById('setting-company-phone').value.trim(),
             companyCity: document.getElementById('setting-company-city').value.trim(),
+            inkSave: document.getElementById('setting-ink-save').checked,
         };
         if (logoBtn.dataset.pendingLogo) {
             settings.companyLogo = logoBtn.dataset.pendingLogo;

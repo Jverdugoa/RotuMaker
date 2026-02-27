@@ -81,11 +81,11 @@
             </div>
             <div class="field-group full-width">
               <label class="field-label">Dirección</label>
-              <input type="text" class="field-input" id="field-direccion" placeholder="Dirección completa" />
+              <input type="text" class="field-input" id="field-direccion" placeholder="Calle 123 # 4-5 | Apto 101" />
             </div>
             <div class="field-group">
               <label class="field-label">Ciudad</label>
-              <input type="text" class="field-input" id="field-ciudad" placeholder="Ciudad" />
+              <input type="text" class="field-input" id="field-ciudad" placeholder="Ciudad - Departamento" />
             </div>
             <div class="field-group">
               <label class="field-label">Teléfono</label>
@@ -338,6 +338,17 @@
             </div>
           </div>
 
+          <div class="settings-section">
+            <h3 class="settings-section-title">🖨️ Preferencias de Impresión</h3>
+            <label class="toggle-option">
+              <div class="toggle-info">
+                <span class="toggle-label">Modo Ahorro de Tinta</span>
+                <p class="field-hint">Elimina fondos sólidos oscuros en los rótulos</p>
+              </div>
+              <input type="checkbox" id="setting-ink-save" class="toggle-checkbox" />
+            </label>
+          </div>
+
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary full-width" id="btn-save-settings">Guardar configuración</button>
@@ -351,6 +362,12 @@
     <!-- PRINT AREA (hidden from view, used only for printing) -->
     <div id="print-area" class="print-area"></div>
 
+    <script src="https://unpkg.com/feather-icons"></script>
     <script type="module" src="/src/app.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (window.feather) feather.replace();
+      });
+    </script>
   </body>
 </html>

@@ -73,27 +73,25 @@ export function buildLabelHTML(label, company) {
   // Note: The root .rotulo div is created outside this function 
   // or we can inject styles here.
   return `
-    <div style="--label-accent: ${brandColor}; display:contents">
-        ${watermarkHtml}
-        <div class="rotulo-header">
-          ${logoHtml}
-          <div class="rotulo-company-name">${escapeHtml(companyNameDisplay)}</div>
+      ${watermarkHtml}
+      <div class="rotulo-header">
+        ${logoHtml}
+        <div class="rotulo-company-name">${escapeHtml(companyNameDisplay)}</div>
+      </div>
+      <div class="rotulo-body">
+        <div class="rotulo-section">
+          <div class="rotulo-section-title">Remitente</div>
+          ${remitente || '<div class="rotulo-field" style="color:#999;font-size:0.75rem">Configura tu empresa en Ajustes ⚙️</div>'}
         </div>
-        <div class="rotulo-body">
-          <div class="rotulo-section">
-            <div class="rotulo-section-title">Remitente</div>
-            ${remitente || '<div class="rotulo-field" style="color:#999;font-size:0.75rem">Configura tu empresa en Ajustes ⚙️</div>'}
-          </div>
-          <div class="rotulo-divider"></div>
-          <div class="rotulo-section">
-            <div class="rotulo-section-title">Destinatario</div>
-            ${destinatario || '<div class="rotulo-field" style="color:#999;font-size:0.75rem">Sin datos</div>'}
-          </div>
+        <div class="rotulo-divider"></div>
+        <div class="rotulo-section">
+          <div class="rotulo-section-title">Destinatario</div>
+          ${destinatario || '<div class="rotulo-field" style="color:#999;font-size:0.75rem">Sin datos</div>'}
         </div>
-        <div class="rotulo-footer">
-          ${footerHTML}
-        </div>
-    </div>
+      </div>
+      <div class="rotulo-footer">
+        ${footerHTML}
+      </div>
   `;
 }
 
@@ -127,7 +125,11 @@ export function renderLabelPreview(label, company, container) {
   wrapper.className = 'label-item-wrap';
 
   const rotulo = document.createElement('div');
-  rotulo.className = 'rotulo';
+  const inkSave = localStorage.getItem('rotumaker_ink_save') === 'true';
+  const brandColor = sessionStorage.getItem('rotumaker_brand_color') || '#1a1a2e';
+
+  rotulo.className = inkSave ? 'rotulo ink-save' : 'rotulo';
+  rotulo.style.setProperty('--label-accent', brandColor);
   rotulo.innerHTML = buildLabelHTML(label, company);
   wrapper.appendChild(rotulo);
 
