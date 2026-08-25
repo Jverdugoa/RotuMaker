@@ -3,10 +3,18 @@
  * Uses Gemini or Groq API to extract label data from raw WhatsApp/text messages
  */
 
-const GEMINI_MODEL = 'gemini-2.0-flash-lite';
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GEMINI_MODELS = [
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-lite',
+    'gemini-1.5-flash'
+];
 
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_MODELS = [
+    'llama-3.1-8b-instant',
+    'llama-3.3-70b-versatile',
+    'llama3-8b-8192',
+    'llama-3.1-70b-versatile'
+];
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const SYSTEM_PROMPT = `Eres un extractor de datos para rótulos de envío colombianos.
@@ -85,61 +93,102 @@ export async function extractFromMessage(rawText, apiKey, provider = 'gemini') {
 
 // ---- Gemini ----
 async function callGemini(rawText, apiKey) {
-    const res = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: `${SYSTEM_PROMPT}\n\nTexto a analizar:\n${rawText.trim()}` }] }],
-            generationConfig: {
-                temperature: 0.1,
-                maxOutputTokens: 1024,
-                responseMimeType: 'application/json'
-            }
-        })
-    });
+    let lastError = null;
 
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        const msg = err?.error?.message || `HTTP ${res.status}`;
-        if (res.status === 400 || res.status === 403) throw new Error('API_KEY_INVALID');
-        if (res.status === 429) throw new Error('RATE_LIMIT');
-        throw new Error(`API_ERROR: ${msg}`);
+    for (const model of GEMINI_MODELS) {
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `${SYSTEM_PROMPT}\n\nTexto a analizar:\n${rawText.trim()}` }] }],
+                    generationConfig: {
+                        temperature: 0.1,
+                        maxOutputTokens: 1024,
+                        responseMimeType: 'application/json'
+                    }
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) return text;
+            }
+
+            const err = await res.json().catch(() => ({}));
+            const msg = err?.error?.message || `HTTP ${res.status}`;
+
+            if (res.status === 400 || res.status === 403) {
+                // If it's specifically an invalid API key, throw immediately
+                if (msg.toLowerCase().includes('api_key') || msg.toLowerCase().includes('key not valid')) {
+                    throw new Error('API_KEY_INVALID');
+                }
+            }
+            if (res.status === 429) {
+                throw new Error('RATE_LIMIT');
+            }
+
+            lastError = new Error(`API_ERROR: ${msg}`);
+        } catch (e) {
+            if (e.message === 'API_KEY_INVALID' || e.message === 'RATE_LIMIT' || e.name === 'TypeError') {
+                throw e;
+            }
+            lastError = e;
+        }
     }
 
-    const data = await res.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    throw lastError || new Error('API_ERROR: No available Gemini models responded');
 }
 
 // ---- Groq ----
 async function callGroq(rawText, apiKey) {
-    const res = await fetch(GROQ_API_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-            model: GROQ_MODEL,
-            messages: [
-                { role: 'system', content: SYSTEM_PROMPT },
-                { role: 'user', content: `Texto a analizar:\n${rawText.trim()}` }
-            ],
-            response_format: { type: 'json_object' },
-            temperature: 0.1,
-            max_tokens: 1024
-        })
-    });
+    let lastError = null;
 
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        const msg = err?.error?.message || `HTTP ${res.status}`;
-        if (res.status === 401 || res.status === 403) throw new Error('API_KEY_INVALID');
-        if (res.status === 429) throw new Error('RATE_LIMIT');
-        throw new Error(`API_ERROR: ${msg}`);
+    for (const model of GROQ_MODELS) {
+        try {
+            const res = await fetch(GROQ_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: model,
+                    messages: [
+                        { role: 'system', content: SYSTEM_PROMPT },
+                        { role: 'user', content: `Texto a analizar:\n${rawText.trim()}` }
+                    ],
+                    response_format: { type: 'json_object' },
+                    temperature: 0.1,
+                    max_tokens: 1024
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                const content = data?.choices?.[0]?.message?.content;
+                if (content) return content;
+            }
+
+            const err = await res.json().catch(() => ({}));
+            const msg = err?.error?.message || `HTTP ${res.status}`;
+
+            if (res.status === 401) throw new Error('API_KEY_INVALID');
+            if (res.status === 429) throw new Error('RATE_LIMIT');
+
+            // If 404 or model error, continue loop to try fallback models
+            lastError = new Error(`API_ERROR: ${msg}`);
+        } catch (e) {
+            if (e.message === 'API_KEY_INVALID' || e.message === 'RATE_LIMIT' || e.name === 'TypeError') {
+                throw e;
+            }
+            lastError = e;
+        }
     }
 
-    const data = await res.json();
-    return data?.choices?.[0]?.message?.content || '';
+    throw lastError || new Error('API_ERROR: No available Groq models responded');
 }
 
 /**
