@@ -46,23 +46,41 @@ export async function extractFromMessage(rawText, apiKey, provider = 'gemini') {
     if (!apiKey || apiKey.trim() === '') throw new Error('NO_API_KEY');
     if (!rawText || rawText.trim() === '') throw new Error('EMPTY_TEXT');
 
-    const rawContent = provider === 'groq'
-        ? await callGroq(rawText, apiKey)
-        : await callGemini(rawText, apiKey);
+    let rawContent = '';
+    try {
+        rawContent = provider === 'groq'
+            ? await callGroq(rawText, apiKey)
+            : await callGemini(rawText, apiKey);
+    } catch (err) {
+        if (err.message && (err.message.includes('Failed to fetch') || err.name === 'TypeError')) {
+            throw new Error('NETWORK_ERROR');
+        }
+        throw err;
+    }
+
+    // Clean any markdown code fences if returned (e.g. ```json ... ```)
+    let cleaned = rawContent.trim();
+    if (cleaned.startsWith('```')) {
+        cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+    }
 
     // Extract JSON from response
-    const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('PARSE_ERROR');
 
-    const extracted = JSON.parse(jsonMatch[0]);
-    return {
-        nombre: String(extracted.nombre || '').trim(),
-        cedula: String(extracted.cedula || '').replace(/\D/g, ''),
-        direccion: String(extracted.direccion || '').trim(),
-        ciudad: String(extracted.ciudad || '').trim(),
-        telefono: String(extracted.telefono || '').replace(/\D/g, ''),
-        notas: String(extracted.notas || '').trim(),
-    };
+    try {
+        const extracted = JSON.parse(jsonMatch[0]);
+        return {
+            nombre: String(extracted.nombre || '').trim(),
+            cedula: String(extracted.cedula || '').trim(),
+            direccion: String(extracted.direccion || '').trim(),
+            ciudad: String(extracted.ciudad || '').trim(),
+            telefono: String(extracted.telefono || '').trim(),
+            notas: String(extracted.notas || '').trim(),
+        };
+    } catch (e) {
+        throw new Error('PARSE_ERROR');
+    }
 }
 
 // ---- Gemini ----
@@ -72,7 +90,11 @@ async function callGemini(rawText, apiKey) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             contents: [{ parts: [{ text: `${SYSTEM_PROMPT}\n\nTexto a analizar:\n${rawText.trim()}` }] }],
-            generationConfig: { temperature: 0.1, maxOutputTokens: 512 }
+            generationConfig: {
+                temperature: 0.1,
+                maxOutputTokens: 1024,
+                responseMimeType: 'application/json'
+            }
         })
     });
 
@@ -80,6 +102,7 @@ async function callGemini(rawText, apiKey) {
         const err = await res.json().catch(() => ({}));
         const msg = err?.error?.message || `HTTP ${res.status}`;
         if (res.status === 400 || res.status === 403) throw new Error('API_KEY_INVALID');
+        if (res.status === 429) throw new Error('RATE_LIMIT');
         throw new Error(`API_ERROR: ${msg}`);
     }
 
@@ -101,15 +124,16 @@ async function callGroq(rawText, apiKey) {
                 { role: 'system', content: SYSTEM_PROMPT },
                 { role: 'user', content: `Texto a analizar:\n${rawText.trim()}` }
             ],
+            response_format: { type: 'json_object' },
             temperature: 0.1,
-            max_tokens: 256
+            max_tokens: 1024
         })
     });
 
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         const msg = err?.error?.message || `HTTP ${res.status}`;
-        if (res.status === 401) throw new Error('API_KEY_INVALID');
+        if (res.status === 401 || res.status === 403) throw new Error('API_KEY_INVALID');
         if (res.status === 429) throw new Error('RATE_LIMIT');
         throw new Error(`API_ERROR: ${msg}`);
     }
@@ -126,9 +150,9 @@ export function getExtractorErrorMessage(err) {
         'NO_API_KEY': '⚙️ Configura tu API Key en Ajustes antes de extraer.',
         'EMPTY_TEXT': '📝 El mensaje está vacío. Pega el texto primero.',
         'API_KEY_INVALID': '🔑 La API Key no es válida. Verifica en Ajustes.',
-        'PARSE_ERROR': '🤖 No se pudo interpretar la respuesta. Intenta de nuevo.',
-        'NETWORK_ERROR': '🌐 Sin conexión. Verifica tu internet.',
-        'RATE_LIMIT': '⏱️ Demasiadas solicitudes. Espera un momento.',
+        'PARSE_ERROR': '🤖 No se pudo interpretar la respuesta del modelo. Intenta de nuevo.',
+        'NETWORK_ERROR': '🌐 Sin conexión o error de red. Verifica tu internet.',
+        'RATE_LIMIT': '⏱️ Límite de solicitudes o cuota excedida. Espera un momento.',
     };
     return messages[err.message] || `❌ Error: ${err.message}`;
 }

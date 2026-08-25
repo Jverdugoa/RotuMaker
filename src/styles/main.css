@@ -1240,7 +1240,13 @@ svg {
     height: 100%;
     display: grid;
     gap: 6mm;
-    page-break-after: always;
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .print-page:last-child {
+    page-break-after: avoid;
+    break-after: avoid;
   }
 
   .print-page.cols-2 {

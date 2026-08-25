@@ -49,23 +49,23 @@ export function buildLabelHTML(label, company) {
   const companyNameDisplay = company.companyName || 'MI EMPRESA';
 
   let remitente = [
-    company.companyName && `<div class="rotulo-field"><strong>Empresa</strong>${company.companyName}</div>`,
-    company.companyAddr && `<div class="rotulo-field"><strong>Dirección</strong>${company.companyAddr}</div>`,
-    company.companyCity && `<div class="rotulo-field"><strong>Ciudad</strong>${company.companyCity}</div>`,
-    company.companyPhone && `<div class="rotulo-field"><strong>Tel</strong>${formatPhone(company.companyPhone)}</div>`,
+    company.companyName && `<div class="rotulo-field"><strong>Empresa</strong>${escapeHtml(company.companyName)}</div>`,
+    company.companyAddr && `<div class="rotulo-field"><strong>Dirección</strong>${escapeHtml(company.companyAddr)}</div>`,
+    company.companyCity && `<div class="rotulo-field"><strong>Ciudad</strong>${escapeHtml(company.companyCity)}</div>`,
+    company.companyPhone && `<div class="rotulo-field"><strong>Tel</strong>${escapeHtml(formatPhone(company.companyPhone))}</div>`,
   ].filter(Boolean).join('');
 
   if (label.notas) {
     remitente += `<div class="rotulo-h-divider"></div>`;
-    remitente += `<div class="rotulo-field"><strong>Notas / Contenido</strong>${label.notas}</div>`;
+    remitente += `<div class="rotulo-field"><strong>Notas / Contenido</strong>${escapeHtml(label.notas)}</div>`;
   }
 
   const destinatario = [
-    label.nombre && `<div class="rotulo-field"><strong>Nombre</strong>${label.nombre}</div>`,
-    label.cedula && `<div class="rotulo-field"><strong>Cédula</strong>${formatCedula(label.cedula)}</div>`,
-    label.direccion && `<div class="rotulo-field"><strong>Dirección</strong>${label.direccion}</div>`,
-    label.ciudad && `<div class="rotulo-field"><strong>Ciudad</strong>${label.ciudad}</div>`,
-    label.telefono && `<div class="rotulo-field"><strong>Tel</strong>${formatPhone(label.telefono)}</div>`,
+    label.nombre && `<div class="rotulo-field"><strong>Nombre</strong>${escapeHtml(label.nombre)}</div>`,
+    label.cedula && `<div class="rotulo-field"><strong>Cédula</strong>${escapeHtml(formatCedula(label.cedula))}</div>`,
+    label.direccion && `<div class="rotulo-field"><strong>Dirección</strong>${escapeHtml(label.direccion)}</div>`,
+    label.ciudad && `<div class="rotulo-field"><strong>Ciudad</strong>${escapeHtml(label.ciudad)}</div>`,
+    label.telefono && `<div class="rotulo-field"><strong>Tel</strong>${escapeHtml(formatPhone(label.telefono))}</div>`,
   ].filter(Boolean).join('');
 
   const footerHTML = buildFooterHTML(label.paymentType, label.monto);
@@ -108,7 +108,7 @@ function buildFooterHTML(paymentType, monto) {
     const checkedClass = checked ? 'checked' : '';
     let extra = '';
     if (t.value === 'recaudo' && checked && monto) {
-      extra = `<span class="rotulo-amount">$${formatMonto(monto)}</span>`;
+      extra = `<span class="rotulo-amount">$${escapeHtml(formatMonto(monto))}</span>`;
     }
     return `
       <div class="rotulo-check-item">
@@ -154,25 +154,40 @@ export function renderLabelPreview(label, company, container, index) {
 // ---- Helpers ----
 
 function escapeHtml(str) {
-  return String(str)
+  return String(str ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function formatPhone(phone) {
+  if (!phone) return '';
   const digits = String(phone).replace(/\D/g, '');
   if (digits.length === 10) {
     return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
   }
-  return phone;
+  if (digits.length === 12 && digits.startsWith('57')) {
+    return `+57 ${digits.slice(2, 5)} ${digits.slice(5, 8)} ${digits.slice(8)}`;
+  }
+  return String(phone).trim();
 }
 
 function formatCedula(cedula) {
-  const digits = String(cedula).replace(/\D/g, '');
-  // Format with dots: 1.234.567
-  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  if (!cedula) return '';
+  const raw = String(cedula).trim();
+  // If purely digits, format with dots: 1.234.567
+  if (/^\d+$/.test(raw)) {
+    return raw.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+  // If Colombian NIT format (e.g. 900123456-1)
+  const nitMatch = raw.match(/^(\d+)[-\s](\d)$/);
+  if (nitMatch) {
+    const body = nitMatch[1].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `${body}-${nitMatch[2]}`;
+  }
+  return raw;
 }
 
 function formatMonto(monto) {
