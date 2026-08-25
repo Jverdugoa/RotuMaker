@@ -9,13 +9,15 @@ const GEMINI_MODELS = [
     'gemini-1.5-flash'
 ];
 
-const GROQ_MODELS = [
-    'llama-3.1-8b-instant',
+const FALLBACK_GROQ_MODELS = [
     'llama-3.3-70b-versatile',
-    'llama-3.2-3b-preview',
-    'llama-3.2-1b-preview'
+    'llama-3.1-8b-instant',
+    'qwen-2.5-32b',
+    'gemma2-9b-it'
 ];
+
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODELS_URL = 'https://api.groq.com/openai/v1/models';
 
 const SYSTEM_PROMPT = `Eres un extractor de datos para rótulos de envío colombianos.
 Recibirás un fragmento de conversación (puede ser de WhatsApp u otro formato de texto).
@@ -43,6 +45,68 @@ Ejemplo de entrada:
 
 Respuesta esperada:
 {"nombre":"Juan Carlos Puerres","cedula":"611231","direccion":"Calle 6 # 20E-30 | Apto 801 Conjunto Residencial Versalles","ciudad":"Cali - Valle del Cauca","telefono":"3176746268","notas":""}`;
+
+/**
+ * Fetch and discover active chat models dynamically from the user's Groq key
+ */
+export async function getActiveGroqModels(apiKey) {
+    if (!apiKey || apiKey.trim() === '') return FALLBACK_GROQ_MODELS;
+
+    try {
+        const cached = sessionStorage.getItem('rotumaker_groq_active_models');
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+    } catch {}
+
+    try {
+        const res = await fetch(GROQ_MODELS_URL, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+            throw new Error('API_KEY_INVALID');
+        }
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data?.data && Array.isArray(data.data)) {
+                // Filter only active text generation / chat models
+                const ignoreKeywords = ['whisper', 'guard', 'safeguard', 'tts', 'stt', 'embed', 'distil-whisper', 'vision'];
+                const active = data.data
+                    .map(m => m.id)
+                    .filter(id => id && !ignoreKeywords.some(kw => id.toLowerCase().includes(kw)) && !id.includes('preview') && !id.includes('decommissioned'));
+
+                // Prioritize best models
+                const priority = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'qwen-2.5', 'gemma2-9b-it'];
+                active.sort((a, b) => {
+                    const idxA = priority.findIndex(p => a.toLowerCase().includes(p.toLowerCase()));
+                    const idxB = priority.findIndex(p => b.toLowerCase().includes(p.toLowerCase()));
+                    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                    if (idxA !== -1) return -1;
+                    if (idxB !== -1) return 1;
+                    return a.localeCompare(b);
+                });
+
+                if (active.length > 0) {
+                    try {
+                        sessionStorage.setItem('rotumaker_groq_active_models', JSON.stringify(active));
+                    } catch {}
+                    return active;
+                }
+            }
+        }
+    } catch (e) {
+        if (e.message === 'API_KEY_INVALID') throw e;
+    }
+
+    return FALLBACK_GROQ_MODELS;
+}
 
 /**
  * Extract label fields from a raw text message
@@ -104,7 +168,7 @@ async function callGemini(rawText, apiKey) {
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: `${SYSTEM_PROMPT}\n\nTexto a analizar:\n${rawText.trim()}` }] }],
                     generationConfig: {
-                        temperature: 0.1,
+                        temperature: 0,
                         maxOutputTokens: 1024,
                         responseMimeType: 'application/json'
                     }
@@ -121,7 +185,6 @@ async function callGemini(rawText, apiKey) {
             const msg = err?.error?.message || `HTTP ${res.status}`;
 
             if (res.status === 400 || res.status === 403) {
-                // If it's specifically an invalid API key, throw immediately
                 if (msg.toLowerCase().includes('api_key') || msg.toLowerCase().includes('key not valid')) {
                     throw new Error('API_KEY_INVALID');
                 }
@@ -144,9 +207,10 @@ async function callGemini(rawText, apiKey) {
 
 // ---- Groq ----
 async function callGroq(rawText, apiKey) {
+    const models = await getActiveGroqModels(apiKey);
     let lastError = null;
 
-    for (const model of GROQ_MODELS) {
+    for (const model of models) {
         try {
             const res = await fetch(GROQ_API_URL, {
                 method: 'POST',
@@ -160,8 +224,7 @@ async function callGroq(rawText, apiKey) {
                         { role: 'system', content: SYSTEM_PROMPT },
                         { role: 'user', content: `Texto a analizar:\n${rawText.trim()}` }
                     ],
-                    response_format: { type: 'json_object' },
-                    temperature: 0.1,
+                    temperature: 0,
                     max_tokens: 1024
                 })
             });
@@ -178,8 +241,7 @@ async function callGroq(rawText, apiKey) {
             if (res.status === 401) throw new Error('API_KEY_INVALID');
             if (res.status === 429) throw new Error('RATE_LIMIT');
 
-            // If 404 or model error, continue loop to try fallback models
-            lastError = new Error(`API_ERROR: ${msg}`);
+            lastError = new Error(`API_ERROR: [${model}] ${msg}`);
         } catch (e) {
             if (e.message === 'API_KEY_INVALID' || e.message === 'RATE_LIMIT' || e.name === 'TypeError') {
                 throw e;
@@ -188,7 +250,7 @@ async function callGroq(rawText, apiKey) {
         }
     }
 
-    throw lastError || new Error('API_ERROR: No available Groq models responded');
+    throw lastError || new Error('API_ERROR: No se pudo conectar con los modelos de Groq');
 }
 
 /**

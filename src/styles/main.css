@@ -5,6 +5,13 @@
 /* FONTS & BASE */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+@font-face {
+  font-family: 'Ryman Eco';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Ryman Eco'), local('RymanEco-Regular'), local('RymanEco');
+}
+
 :root {
   /* Colors */
   --color-bg: #0f1117;
@@ -27,6 +34,7 @@
   /* Typography */
   --font-ui: 'Inter', system-ui, sans-serif;
   --font-label: 'Times New Roman', Times, serif;
+  --font-label-eco: 'Ryman Eco', 'Garamond', 'Times New Roman', Times, serif;
 
   /* Spacing */
   --space-xs: 4px;
@@ -600,6 +608,10 @@ svg {
   max-width: 380px;
   margin: 0 auto;
   position: relative;
+}
+
+.rotulo.ink-save {
+  font-family: var(--font-label-eco);
 }
 
 /* Watermark layer */
@@ -1275,6 +1287,10 @@ svg {
   }
 
   /* Ink save override for print */
+  .print-rotulo.ink-save {
+    font-family: var(--font-label-eco) !important;
+  }
+
   .print-rotulo.ink-save .rotulo-header {
     background: #fff !important;
     color: #000 !important;
